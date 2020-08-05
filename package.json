@@ -31,7 +31,7 @@
     "predeploy": "node deploy.js",
     "deploy": "npm run deploy:client",
     "predeploy:client": "npm run build:production",
-    "deploy:client": "rsync -az --force --delete --progress -e 'ssh' ./public_html/covid/ rw251.com:~/public_html/covid --exclude=/.ssh --exclude=/.logs --exclude=/.cagefs --exclude=/.cl.selector --exclude=/.bash_history --exclude=/episodes --exclude=/series/Series* --exclude=/series/series-Series* --exclude=/series/Champ* --exclude=/series/series-Champ* --exclude=/series/30* --exclude=/series/series-30* --exclude=/series.json --exclude=/players.json",
+    "deploy:client": "rsync -az --force --delete --progress -e 'ssh' ./public_html/covid/ rw251.com:~/public_html/covid --exclude=/.ssh --exclude=/.logs --exclude=/.cagefs --exclude=/.cl.selector --exclude=/.bash_history",
     "serve": "concurrently -kill-others-on-fail \"npm run watch\" \"http-server ./public_html/covid -p 7498 -a localhost -c-1 -o\"",
     "watch": "rollup -c -w"
   },
