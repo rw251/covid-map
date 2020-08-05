@@ -1,0 +1,11 @@
+node_modules
+public_html/
+src/static/*.json
+src/static/**/*.json
+harvester/cdown/backup/
+
+!src/static/dictionary*.json
+!src/static/dic-extra*.json
+!src/static/manifest.json
+
+.env

@@ -1,0 +1,43 @@
+{
+  "name": "covid-map",
+  "version": "1.0.0",
+  "description": "A map of UK covid cases by local area",
+  "dependencies": {
+    "mapbox-gl": "^1.11.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "concurrently": "^5.2.0",
+    "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "http-server": "^0.12.3",
+    "inquirer": "^7.3.3",
+    "mustache": "^4.0.1",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.23.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-terser": "^6.1.0"
+  },
+  "scripts": {
+    "start": "npm run serve",
+    "build": "rollup -c",
+    "build:production": "rollup -c --environment PRODUCTION",
+    "predeploy": "node deploy.js",
+    "deploy": "npm run deploy:client",
+    "predeploy:client": "npm run build:production",
+    "deploy:client": "rsync -az --force --delete --progress -e 'ssh' ./public_html/covid/ rw251.com:~/public_html/covid --exclude=/.ssh --exclude=/.logs --exclude=/.cagefs --exclude=/.cl.selector --exclude=/.bash_history --exclude=/episodes --exclude=/series/Series* --exclude=/series/series-Series* --exclude=/series/Champ* --exclude=/series/series-Champ* --exclude=/series/30* --exclude=/series/series-30* --exclude=/series.json --exclude=/players.json",
+    "serve": "concurrently -kill-others-on-fail \"npm run watch\" \"http-server ./public_html/covid -p 7498 -a localhost -c-1 -o\"",
+    "watch": "rollup -c -w"
+  },
+  "author": "Richard Williams <1234richardwilliams@gmail.com> (https://rw251.github.io)",
+  "license": "ISC",
+  "browserslist": [
+    "ie 11"
+  ]
+}
