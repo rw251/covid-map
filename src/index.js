@@ -1,35 +1,17 @@
 import mapboxgl from 'mapbox-gl';
-
-const getMsoaBoundaries = () =>
-  Promise.all([
-    fetch('https://api.jsonbin.io/b/5f29cc846f8e4e3faf2b25ad').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29ccabdddf413f95bcd7e3/1').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29cda26f8e4e3faf2b268a').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29cdebdddf413f95bcd8f2').then((resp) => resp.json()),
-  ]).then(([a, b, c, d]) => {
-    a.features = a.features.concat(b.features);
-    a.features = a.features.concat(c.features);
-    a.features = a.features.concat(d.features);
-    return a;
-  });
-
-const getCasesData = () =>
-  Promise.all([
-    fetch('https://api.jsonbin.io/b/5f29d48ddddf413f95bcde9d').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29d4ad6f8e4e3faf2b2c9d').then((resp) => resp.json()),
-  ]).then(([a, b]) => ({ ...a, ...b }));
+import { getData } from './data';
 
 const spark = document.getElementById('spark');
 const ctx = spark.getContext('2d');
 
 let lastName;
 let lastValues;
-let maxCases = [0];
 let maxIdx = 3;
 const radius = 5;
 let height = 200;
 let width = 400;
 
+let maximumCases;
 const drawSpark = (name, values) => {
   if (!values) return;
   const tips = [];
@@ -74,7 +56,7 @@ const drawSpark = (name, values) => {
   ctx.font = '10px sans-serif';
   ctx.fillStyle = 'black';
   ctx.textAlign = 'right';
-  ctx.fillText(maxCases[maxIdx], margin - 2, 43);
+  ctx.fillText(maximumCases[maxIdx], margin - 2, 43);
   ctx.beginPath();
   ctx.moveTo(margin, 200);
   ctx.lineTo(10 + margin, 200);
@@ -83,7 +65,7 @@ const drawSpark = (name, values) => {
   ctx.fillText('0', margin - 2, 203);
 
   const n = values.length;
-  const u = 160 / maxCases[maxIdx];
+  const u = 160 / maximumCases[maxIdx];
   const first = values.shift().value || 0;
   ctx.font = '20px sans-serif';
   ctx.fillStyle = 'black';
@@ -128,77 +110,69 @@ var map = new mapboxgl.Map({
 // Add zoom and rotation controls to the map.
 map.addControl(new mapboxgl.NavigationControl());
 
-Promise.all([getMsoaBoundaries(), getCasesData()]).then(([file, cases]) => {
-  file.features.forEach((feat) => {
-    feat.id = feat.properties.OBJECTID;
-    if (cases[feat.properties.MSOA11CD]) {
-      feat.properties.cases = cases[feat.properties.MSOA11CD].d;
-      feat.properties.name = cases[feat.properties.MSOA11CD].n;
-      feat.properties.thisWeek = feat.properties.cases[feat.properties.cases.length - 1].value || 0;
-      const thisMax = feat.properties.cases.reduce(
-        (max, next) => Math.max(max, next.value || 0),
-        0
-      );
-      if (thisMax > maxCases[0]) {
-        console.log(feat.properties.name, thisMax);
-        maxCases.unshift(thisMax);
-      }
+let isDataLoaded = false;
+let isMapLoaded = false;
+let data;
 
-      if (feat.properties.cases.length !== 26) console.log(feat.id, feat.cases);
-    } else {
-      feat.properties.cases = [{}, {}, {}];
-      feat.properties.thisWeek = 0;
-      feat.properties.name = 'No data for this area';
-    }
+const drawCases = () => {
+  map.addSource('msoa', { type: 'geojson', data });
+  map.addLayer({
+    id: 'msoa',
+    type: 'fill',
+    source: 'msoa',
+    layout: {},
+    paint: {
+      'fill-color': [
+        'case',
+        ['>=', ['get', 'thisWeek'], 20],
+        'rgba(255, 45, 45, 0.55)',
+        ['>=', ['get', 'thisWeek'], 10],
+        'rgba(253, 171, 44, 0.55)',
+        ['>=', ['get', 'thisWeek'], 5],
+        'rgba(255, 252, 95, 0.55)',
+        ['>=', ['get', 'thisWeek'], 1],
+        'rgba(189, 241, 182, 0.55)',
+        ['boolean', ['feature-state', 'hover'], false],
+        'rgba(98,123,193,0.55)',
+        'transparent',
+      ],
+    },
   });
-  map.on('load', function () {
-    map.addSource('msoa', { type: 'geojson', data: file });
-    map.addLayer({
-      id: 'msoa',
-      type: 'fill',
-      source: 'msoa',
-      layout: {},
-      paint: {
-        'fill-color': [
-          'case',
-          ['>=', ['get', 'thisWeek'], 20],
-          'rgba(255, 45, 45, 0.55)',
-          ['>=', ['get', 'thisWeek'], 10],
-          'rgba(253, 171, 44, 0.55)',
-          ['>=', ['get', 'thisWeek'], 5],
-          'rgba(255, 252, 95, 0.55)',
-          ['>=', ['get', 'thisWeek'], 1],
-          'rgba(189, 241, 182, 0.55)',
-          ['boolean', ['feature-state', 'hover'], false],
-          'rgba(98,123,193,0.55)',
-          'transparent',
-        ],
-      },
-    });
-    map.addLayer({
-      id: 'msoa-borders',
-      type: 'line',
-      source: 'msoa',
-      layout: {},
-      paint: {
-        'line-color': [
-          'case',
-          ['>=', ['get', 'thisWeek'], 20],
-          'rgb(150, 0, 0)',
-          ['>=', ['get', 'thisWeek'], 10],
-          'rgb(150, 89, 0)',
-          ['>=', ['get', 'thisWeek'], 5],
-          'rgb(175, 171, 0)',
-          ['>=', ['get', 'thisWeek'], 1],
-          'rgb(51, 177, 34)',
-          ['boolean', ['feature-state', 'hover'], false],
-          '#627BC1',
-          'transparent',
-        ],
-        'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0.6],
-      },
-    });
+  map.addLayer({
+    id: 'msoa-borders',
+    type: 'line',
+    source: 'msoa',
+    layout: {},
+    paint: {
+      'line-color': [
+        'case',
+        ['>=', ['get', 'thisWeek'], 20],
+        'rgb(150, 0, 0)',
+        ['>=', ['get', 'thisWeek'], 10],
+        'rgb(150, 89, 0)',
+        ['>=', ['get', 'thisWeek'], 5],
+        'rgb(175, 171, 0)',
+        ['>=', ['get', 'thisWeek'], 1],
+        'rgb(51, 177, 34)',
+        ['boolean', ['feature-state', 'hover'], false],
+        '#627BC1',
+        'transparent',
+      ],
+      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0.6],
+    },
   });
+};
+
+getData().then(({ file, maxCases }) => {
+  isDataLoaded = true;
+  data = file;
+  maximumCases = maxCases;
+  if (isMapLoaded) drawCases();
+});
+
+map.on('load', () => {
+  isMapLoaded = true;
+  if (isDataLoaded) drawCases();
 });
 
 map.on('mousemove', function (e) {
@@ -215,7 +189,6 @@ var lastHoveredStateId = -1;
 map.on('mousemove', 'msoa', function (e) {
   if (e.features.length > 0) {
     hoveredStateId = e.features[0].id;
-    console.log(hoveredStateId);
     if (hoveredStateId !== lastHoveredStateId) {
       map.setFeatureState({ source: 'msoa', id: lastHoveredStateId }, { hover: false });
       map.setFeatureState({ source: 'msoa', id: hoveredStateId }, { hover: true });
