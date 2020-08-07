@@ -17,7 +17,10 @@
     "http-server": "^0.12.3",
     "inquirer": "^7.3.3",
     "mustache": "^4.0.1",
+    "node-fetch": "^2.6.0",
     "prettier": "^2.0.5",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
     "rimraf": "^3.0.2",
     "rollup": "^2.23.0",
     "rollup-plugin-babel": "^4.4.0",
@@ -26,6 +29,7 @@
   },
   "scripts": {
     "start": "npm run serve",
+    "update": "node src/update.js",
     "build": "rollup -c",
     "build:production": "rollup -c --environment PRODUCTION",
     "predeploy": "node deploy.js",
