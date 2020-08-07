@@ -13,8 +13,8 @@ const getMsoaBoundaries = () =>
 
 const getCasesData = () =>
   Promise.all([
-    fetch('https://api.jsonbin.io/b/5f29d48ddddf413f95bcde9d').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29d4ad6f8e4e3faf2b2c9d').then((resp) => resp.json()),
+    fetch('https://api.jsonbin.io/b/5f2cfe856f8e4e3faf2d207c').then((resp) => resp.json()),
+    fetch('https://api.jsonbin.io/b/5f2cfea56f8e4e3faf2d2086').then((resp) => resp.json()),
   ]).then(([a, b]) => ({ ...a, ...b }));
 
 const getData = () =>
@@ -25,12 +25,8 @@ const getData = () =>
       if (cases[feat.properties.MSOA11CD]) {
         feat.properties.cases = cases[feat.properties.MSOA11CD].d;
         feat.properties.name = cases[feat.properties.MSOA11CD].n;
-        feat.properties.thisWeek =
-          feat.properties.cases[feat.properties.cases.length - 1].value || 0;
-        const thisMax = feat.properties.cases.reduce(
-          (max, next) => Math.max(max, next.value || 0),
-          0
-        );
+        feat.properties.thisWeek = feat.properties.cases[feat.properties.cases.length - 1];
+        const thisMax = feat.properties.cases.reduce((max, next) => Math.max(max, next), 0);
         if (thisMax > maxCases[0]) {
           maxCases.unshift(thisMax);
         }

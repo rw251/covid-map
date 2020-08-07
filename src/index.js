@@ -17,8 +17,8 @@ const drawSpark = (name, values) => {
   const tips = [];
   values.forEach((val, i) => {
     if (
-      (i === 0 || (i > 0 && val.value > (values[i - 1].value || 0))) &&
-      (i === values.length - 1 || val.value > (values[i + 1].value || 0))
+      (i === 0 || (i > 0 && val > values[i - 1])) &&
+      (i === values.length - 1 || val > values[i + 1])
     ) {
       tips.push(i);
     }
@@ -66,7 +66,7 @@ const drawSpark = (name, values) => {
 
   const n = values.length;
   const u = 160 / maximumCases[maxIdx];
-  const first = values.shift().value || 0;
+  const first = values.shift();
   ctx.font = '20px sans-serif';
   ctx.fillStyle = 'black';
   ctx.textAlign = 'left';
@@ -77,11 +77,11 @@ const drawSpark = (name, values) => {
   ctx.beginPath();
   ctx.moveTo(10 + margin, 200 - u * first);
   values.forEach((x, i) => {
-    ctx.lineTo(10 + margin + (i + 1) * ((width - margin) / n), 200 - u * (x.value || 0));
+    ctx.lineTo(10 + margin + (i + 1) * ((width - margin) / n), 200 - u * x);
 
     if (tips.indexOf(i + 1) > -1) {
       // Add number over tip
-      ctx.fillText(x.value, 10 + margin + (i + 1) * ((width - margin) / n), 197 - u * x.value);
+      ctx.fillText(x, 10 + margin + (i + 1) * ((width - margin) / n), 197 - u * x);
     }
   });
   ctx.stroke();
