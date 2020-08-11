@@ -1,9 +1,9 @@
 const getMsoaBoundaries = () =>
   Promise.all([
-    fetch('https://api.jsonbin.io/b/5f29cc846f8e4e3faf2b25ad').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29ccabdddf413f95bcd7e3/1').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29cda26f8e4e3faf2b268a').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f29cdebdddf413f95bcd8f2').then((resp) => resp.json()),
+    fetch('msoa1.json').then((resp) => resp.json()),
+    fetch('msoa2.json').then((resp) => resp.json()),
+    fetch('msoa3.json').then((resp) => resp.json()),
+    fetch('msoa4.json').then((resp) => resp.json()),
   ]).then(([a, b, c, d]) => {
     a.features = a.features.concat(b.features);
     a.features = a.features.concat(c.features);
@@ -13,8 +13,8 @@ const getMsoaBoundaries = () =>
 
 const getCasesData = () =>
   Promise.all([
-    fetch('https://api.jsonbin.io/b/5f2cfe856f8e4e3faf2d207c').then((resp) => resp.json()),
-    fetch('https://api.jsonbin.io/b/5f2cfea56f8e4e3faf2d2086').then((resp) => resp.json()),
+    fetch('dataA.json').then((resp) => resp.json()),
+    fetch('dataB.json').then((resp) => resp.json()),
   ]).then(([a, b]) => ({ ...a, ...b }));
 
 const getData = () =>

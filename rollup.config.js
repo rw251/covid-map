@@ -40,7 +40,10 @@ function buildConfig({ watch } = {}) {
       !isDev && terser(), // uglify the code if not dev mode
       createHTMLPlugin({ isDev }), // create the index.html
       copy({
-        targets: [{ src: 'src/static/*', dest: distDir, dot: true }],
+        targets: [
+          { src: 'src/static/*', dest: distDir, dot: true },
+          { src: 'data/*', dest: distDir, dot: true },
+        ],
       }),
     ].filter((item) => item), // filter out unused plugins by filtering out false and null values
   };
