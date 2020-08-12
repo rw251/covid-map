@@ -90,7 +90,11 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
       fs.writeFileSync(join(__dirname, '..', 'data', 'data.json'), JSON.stringify(data));
     });
 
-// getLatestData();
+// let week = 31;
+// let day = 6;
+// let reportDate = '12 August 2020';
+// let updateDate = '8th August 2020';
+
 getInfoFromXls()
   .then(({ week, day, reportDate, updateDate }) =>
     reportDate !== lastReportDate || updateDate !== lastUpdateDate
