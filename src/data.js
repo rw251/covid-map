@@ -20,12 +20,13 @@ const getCasesData = () =>
 const getData = () =>
   Promise.all([getMsoaBoundaries(), getCasesData()]).then(([file, cases]) => {
     let maxCases = [0];
+    const { reportDate, updateDate, week, day } = cases;
     file.features.forEach((feat) => {
       feat.id = feat.properties.OBJECTID;
       if (cases[feat.properties.MSOA11CD]) {
         feat.properties.cases = cases[feat.properties.MSOA11CD].d;
         feat.properties.name = cases[feat.properties.MSOA11CD].n;
-        feat.properties.thisWeek = feat.properties.cases[feat.properties.cases.length - 1];
+        feat.properties.thisWeek = cases[feat.properties.MSOA11CD].l;
         const thisMax = feat.properties.cases.reduce((max, next) => Math.max(max, next), 0);
         if (thisMax > maxCases[0]) {
           maxCases.unshift(thisMax);
@@ -36,7 +37,7 @@ const getData = () =>
         feat.properties.name = 'No data for this area';
       }
     });
-    return { file, maxCases };
+    return { file, maxCases, reportDate, updateDate, week, day };
   });
 
 export { getData };

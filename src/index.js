@@ -6,27 +6,37 @@ const ctx = spark.getContext('2d');
 
 let lastName;
 let lastValues;
+let lastLatestValue;
 let maxIdx = 3;
 const radius = 5;
 let height = 200;
 let width = 400;
 
+// report data properties
+let theReportDate;
+let theUpdateDate;
+let theWeek;
+let theDay;
+
 let maximumCases;
-const drawSpark = (name, values) => {
+const drawSpark = (name, values, latestValue) => {
   if (!values) return;
   const tips = [];
-  values.forEach((val, i) => {
+  const allValues = values.concat([latestValue]);
+  allValues.forEach((val, i) => {
     if (
-      (i === 0 || (i > 0 && val > values[i - 1])) &&
-      (i === values.length - 1 || val > values[i + 1])
+      (i === 0 || (i > 0 && val > allValues[i - 1])) &&
+      (i === allValues.length - 1 || val > allValues[i + 1])
     ) {
       tips.push(i);
     }
   });
   lastName = name;
   lastValues = values;
+  lastLatestValue = latestValue;
   ctx.clearRect(0, 0, spark.width, spark.height);
 
+  // draw boundary
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
   ctx.beginPath();
   ctx.moveTo(10 + radius, 10);
@@ -64,6 +74,7 @@ const drawSpark = (name, values) => {
   ctx.textAlign = 'right';
   ctx.fillText('0', margin - 2, 203);
 
+  // title
   const n = values.length;
   const u = 160 / maximumCases[maxIdx];
   const first = values.shift();
@@ -72,6 +83,8 @@ const drawSpark = (name, values) => {
   ctx.textAlign = 'left';
   ctx.fillText(name, 20, 30);
   ctx.stroke();
+
+  // x bits
   ctx.font = '10px sans-serif';
   ctx.textAlign = 'center';
   ctx.beginPath();
@@ -84,6 +97,19 @@ const drawSpark = (name, values) => {
       ctx.fillText(x, 10 + margin + (i + 1) * ((width - margin) / n), 197 - u * x);
     }
   });
+  ctx.lineTo(
+    10 + margin + (values.length + theDay / 7) * ((width - margin) / n),
+    200 - u * latestValue
+  );
+
+  if (tips.indexOf(values.length + 1) > -1) {
+    // Add number over tip
+    ctx.fillText(
+      latestValue,
+      10 + margin + (values.length + theDay / 7) * ((width - margin) / n),
+      197 - u * latestValue
+    );
+  }
   ctx.stroke();
 };
 
@@ -91,7 +117,7 @@ const resizeCanvas = () => {
   spark.width = window.innerWidth;
   spark.height = window.innerHeight;
   width = Math.min(400, spark.width / 2);
-  if (lastName) drawSpark(lastName, lastValues);
+  if (lastName) drawSpark(lastName, lastValues, lastLatestValue);
 };
 
 window.addEventListener('resize', resizeCanvas, false);
@@ -163,10 +189,15 @@ const drawCases = () => {
   });
 };
 
-getData().then(({ file, maxCases }) => {
+getData().then(({ file, maxCases, reportDate, updateDate, week, day }) => {
+  console.log(reportDate, updateDate, week, day);
   isDataLoaded = true;
   data = file;
   maximumCases = maxCases;
+  theReportDate = reportDate;
+  theUpdateDate = updateDate;
+  theWeek = week;
+  theDay = day;
   if (isMapLoaded) drawCases();
 });
 
@@ -193,7 +224,11 @@ map.on('mousemove', 'msoa', function (e) {
       map.setFeatureState({ source: 'msoa', id: lastHoveredStateId }, { hover: false });
       map.setFeatureState({ source: 'msoa', id: hoveredStateId }, { hover: true });
       lastHoveredStateId = hoveredStateId;
-      drawSpark(e.features[0].properties.name, JSON.parse(e.features[0].properties.cases));
+      drawSpark(
+        e.features[0].properties.name,
+        JSON.parse(e.features[0].properties.cases),
+        e.features[0].properties.thisWeek
+      );
     }
   }
 });
