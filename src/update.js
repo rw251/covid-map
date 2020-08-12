@@ -3,16 +3,15 @@ const fs = require('fs');
 const { join } = require('path');
 const XlsxStreamReader = require('xlsx-stream-reader');
 
-const dataA = JSON.parse(fs.readFileSync(join(__dirname, '..', 'data', 'dataA.json')));
-const dataB = JSON.parse(fs.readFileSync(join(__dirname, '..', 'data', 'dataB.json')));
+const data = JSON.parse(fs.readFileSync(join(__dirname, '..', 'data', 'data.json')));
 
-const lastReportDate = dataA.reportDate;
-const lastUpdateDate = dataA.updateDate;
+const lastReportDate = data.reportDate;
+const lastUpdateDate = data.updateDate;
 
 const getInfoFromXls = () =>
   fetch('https://coronavirus.data.gov.uk/downloads/msoa_data/MSOAs_latest.xlsx').then(
     (res) =>
-      new Promise((resolve) => {
+      new Promise((resolve, reject) => {
         const workBookReader = new XlsxStreamReader();
 
         let updateDate;
@@ -58,6 +57,11 @@ const getInfoFromXls = () =>
           // call process after registering handlers
           workSheetReader.process();
         });
+        workBookReader.on('error', function (err) {
+          console.log('An error occurred reading the xlsx file. Maybe try later.');
+          console.log(err);
+          return reject(err);
+        });
         workBookReader.on('end', function () {
           // end of workbook reached
           return resolve({ week, day, reportDate, updateDate });
@@ -75,23 +79,22 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
     .then((x) => {
       console.log('New data so updating...');
       x.data.forEach((datum) => {
-        let item = dataA[datum.msoa11_cd];
-        if (dataB[datum.msoa11_cd]) item = dataB[datum.msoa11_cd];
-        if (!item) return;
-        item.l = datum.latest_7_days || 0;
-        item.d = datum.msoa_data.map((x) => x.value || 0);
+        if (!data[datum.msoa11_cd]) return;
+        data[datum.msoa11_cd].l = datum.latest_7_days || 0;
+        data[datum.msoa11_cd].d = datum.msoa_data.map((x) => x.value || 0);
       });
-      dataA.reportDate = reportDate;
-      dataA.updateDate = updateDate;
-      dataA.week = week;
-      dataA.day = day;
-      fs.writeFileSync(join(__dirname, '..', 'data', 'dataA.json'), JSON.stringify(dataA));
-      fs.writeFileSync(join(__dirname, '..', 'data', 'dataB.json'), JSON.stringify(dataB));
+      data.reportDate = reportDate;
+      data.updateDate = updateDate;
+      data.week = week;
+      data.day = day;
+      fs.writeFileSync(join(__dirname, '..', 'data', 'data.json'), JSON.stringify(data));
     });
 
 // getLatestData();
-getInfoFromXls().then(({ week, day, reportDate, updateDate }) =>
-  reportDate !== lastReportDate || updateDate !== lastUpdateDate
-    ? getLatestData({ week, day, reportDate, updateDate })
-    : Promise.resolve().then(() => console.log('No new data so nothing doing..'))
-);
+getInfoFromXls()
+  .then(({ week, day, reportDate, updateDate }) =>
+    reportDate !== lastReportDate || updateDate !== lastUpdateDate
+      ? getLatestData({ week, day, reportDate, updateDate })
+      : Promise.resolve().then(() => console.log('No new data so nothing doing..'))
+  )
+  .catch(() => console.log('Exited after error.'));

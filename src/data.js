@@ -11,11 +11,7 @@ const getMsoaBoundaries = () =>
     return a;
   });
 
-const getCasesData = () =>
-  Promise.all([
-    fetch('dataA.json').then((resp) => resp.json()),
-    fetch('dataB.json').then((resp) => resp.json()),
-  ]).then(([a, b]) => ({ ...a, ...b }));
+const getCasesData = () => fetch('data.min.json').then((resp) => resp.json());
 
 const getData = () =>
   Promise.all([getMsoaBoundaries(), getCasesData()]).then(([file, cases]) => {
