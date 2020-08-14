@@ -38,11 +38,11 @@ const getInfoFromXls = () =>
               // second param to forEach colNum is very important as
               // null columns are not defined in the array, ie sparse array
               row.values.forEach(function (rowVal) {
-                if (rowVal.indexOf('Published:') === 0) {
+                if (typeof rowVal === 'string' && rowVal.indexOf('Published:') === 0) {
                   reportDate = rowVal.replace('Published: ', '').trim();
                   console.log('Report date: ' + reportDate);
                 }
-                if (rowVal.indexOf('report (up to') > -1) {
+                if (typeof rowVal === 'string' && rowVal.indexOf('report (up to') > -1) {
                   const [, wk, dy, updateDt] = rowVal.match(
                     /week ([0-9]+) day ([0-9]+) data.*ending (.+)\)/
                   );
@@ -80,20 +80,33 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
       console.log('New data so updating...');
       x.data.forEach((datum) => {
         if (!data[datum.msoa11_cd]) return;
-        data[datum.msoa11_cd].l = datum.latest_7_days || 0;
+        if (!datum.latest_7_days) {
+          if (typeof datum.latest_7_days === 'object') {
+            //either 0 because it's null
+            data[datum.msoa11_cd].l = 0;
+          } else {
+            // or it's the end of a week
+            data[datum.msoa11_cd].l = datum.msoa_data.pop().value || 0;
+          }
+        } else {
+          data[datum.msoa11_cd].l = datum.latest_7_days;
+        }
         data[datum.msoa11_cd].d = datum.msoa_data.map((x) => x.value || 0);
       });
       data.reportDate = reportDate;
       data.updateDate = updateDate;
       data.week = week;
       data.day = day;
-      fs.writeFileSync(join(__dirname, '..', 'data', 'data.json'), JSON.stringify(data));
+      fs.writeFileSync(
+        join(__dirname, '..', 'data', 'data.json'),
+        JSON.stringify(data, null, 2).replace(/ {2}/g, '\t')
+      );
     });
 
-// let week = 31;
-// let day = 6;
-// let reportDate = '12 August 2020';
-// let updateDate = '8th August 2020';
+// let week = 32;
+// let day = 0;
+// let reportDate = '13 August 2020';
+// let updateDate = '9th August 2020';
 
 getInfoFromXls()
   .then(({ week, day, reportDate, updateDate }) =>

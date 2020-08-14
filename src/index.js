@@ -3,6 +3,8 @@ import { getData } from './data';
 
 const spark = document.getElementById('spark');
 const ctx = spark.getContext('2d');
+const slider = document.getElementById('myRange');
+const dateText = document.getElementById('date');
 
 let lastName;
 let lastValues;
@@ -18,9 +20,38 @@ let theUpdateDate;
 let theWeek;
 let theDay;
 
+const wk5Starts = new Date(2020, 0, 27);
+const getWeekStart = (n) => {
+  const weekStarts = new Date(wk5Starts);
+  weekStarts.setDate(weekStarts.getDate() + (n - 5) * 7);
+  return weekStarts;
+};
+const getWeekEnd = (n) => {
+  const weekStarts = getWeekStart(n);
+  weekStarts.setDate(weekStarts.getDate() + 6);
+  return weekStarts;
+};
+const getDay = (week, day) => {
+  const weekStart = getWeekStart(week);
+  weekStart.setDate(weekStart.getDate() + (day - 1));
+  return weekStart;
+};
+const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const getFormattedDate = (dt) => `${dt.getDate()} ${m[dt.getMonth()]}`;
+const getRangeFromWeek = (week) => {
+  if (week === 'thisWeek') {
+    return `${getFormattedDate(getDay(theWeek, theDay))}`;
+  } else {
+    return `${getFormattedDate(getWeekStart(+week.slice(1)))} - ${getFormattedDate(
+      getWeekEnd(+week.slice(1))
+    )}`;
+  }
+};
+
 let maximumCases;
 const drawSpark = (name, values, latestValue) => {
   if (!values) return;
+  let dayFactor = theDay === 0 ? 7 : theDay;
   const tips = [];
   const allValues = values.concat([latestValue]);
   allValues.forEach((val, i) => {
@@ -98,7 +129,7 @@ const drawSpark = (name, values, latestValue) => {
     }
   });
   ctx.lineTo(
-    10 + margin + (values.length + theDay / 7) * ((width - margin) / n),
+    10 + margin + (values.length + dayFactor / 7) * ((width - margin) / n),
     200 - u * latestValue
   );
 
@@ -106,7 +137,7 @@ const drawSpark = (name, values, latestValue) => {
     // Add number over tip
     ctx.fillText(
       latestValue,
-      10 + margin + (values.length + theDay / 7) * ((width - margin) / n),
+      10 + margin + (values.length + dayFactor / 7) * ((width - margin) / n),
       197 - u * latestValue
     );
   }
@@ -140,59 +171,108 @@ let isDataLoaded = false;
 let isMapLoaded = false;
 let data;
 
-const drawCases = () => {
-  map.addSource('msoa', { type: 'geojson', data });
-  map.addLayer({
-    id: 'msoa',
-    type: 'fill',
-    source: 'msoa',
-    layout: {},
-    paint: {
-      'fill-color': [
-        'case',
-        ['>=', ['get', 'thisWeek'], 20],
-        'rgba(255, 45, 45, 0.55)',
-        ['>=', ['get', 'thisWeek'], 10],
-        'rgba(253, 171, 44, 0.55)',
-        ['>=', ['get', 'thisWeek'], 5],
-        'rgba(255, 252, 95, 0.55)',
-        ['>=', ['get', 'thisWeek'], 1],
-        'rgba(189, 241, 182, 0.55)',
-        ['boolean', ['feature-state', 'hover'], false],
-        'rgba(98,123,193,0.55)',
-        'transparent',
-      ],
-    },
-  });
-  map.addLayer({
-    id: 'msoa-borders',
-    type: 'line',
-    source: 'msoa',
-    layout: {},
-    paint: {
-      'line-color': [
-        'case',
-        ['>=', ['get', 'thisWeek'], 20],
-        'rgb(150, 0, 0)',
-        ['>=', ['get', 'thisWeek'], 10],
-        'rgb(150, 89, 0)',
-        ['>=', ['get', 'thisWeek'], 5],
-        'rgb(175, 171, 0)',
-        ['>=', ['get', 'thisWeek'], 1],
-        'rgb(51, 177, 34)',
-        ['boolean', ['feature-state', 'hover'], false],
-        '#627BC1',
-        'transparent',
-      ],
-      'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0.6],
-    },
+const layers = {};
+
+var hoveredStateId = null;
+var lastHoveredStateId = -1;
+
+const showLayerForWeek = (week = 'thisWeek') => {
+  dateText.innerText = getRangeFromWeek(week);
+  if (layers[week]) {
+    map.setLayoutProperty(week, 'visibility', 'visible');
+    map.setLayoutProperty(week + '-borders', 'visibility', 'visible');
+  } else {
+    layers[week] = true;
+    map.addLayer({
+      id: week,
+      type: 'fill',
+      source: 'msoa',
+      layout: {
+        visibility: 'visible',
+      },
+      paint: {
+        'fill-color': [
+          'case',
+          ['>=', ['get', week], 20],
+          'rgba(255, 45, 45, 0.55)',
+          ['>=', ['get', week], 10],
+          'rgba(253, 171, 44, 0.55)',
+          ['>=', ['get', week], 5],
+          'rgba(255, 252, 95, 0.55)',
+          ['>=', ['get', week], 1],
+          'rgba(189, 241, 182, 0.55)',
+          ['boolean', ['feature-state', 'hover'], false],
+          'rgba(98,123,193,0.55)',
+          'transparent',
+        ],
+      },
+    });
+    map.addLayer({
+      id: week + '-borders',
+      type: 'line',
+      source: 'msoa',
+      layout: {
+        visibility: 'visible',
+      },
+      minzoom: 8,
+      paint: {
+        'line-color': [
+          'case',
+          ['>=', ['get', week], 20],
+          'rgb(150, 0, 0)',
+          ['>=', ['get', week], 10],
+          'rgb(150, 89, 0)',
+          ['>=', ['get', week], 5],
+          'rgb(175, 171, 0)',
+          ['>=', ['get', week], 1],
+          'rgb(51, 177, 34)',
+          ['boolean', ['feature-state', 'hover'], false],
+          '#627BC1',
+          'transparent',
+        ],
+        'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0.6],
+      },
+    });
+    map.on('mousemove', week, function (e) {
+      if (e.features.length > 0) {
+        hoveredStateId = e.features[0].id;
+        if (hoveredStateId !== lastHoveredStateId) {
+          map.setFeatureState({ source: 'msoa', id: lastHoveredStateId }, { hover: false });
+          map.setFeatureState({ source: 'msoa', id: hoveredStateId }, { hover: true });
+          lastHoveredStateId = hoveredStateId;
+          drawSpark(
+            e.features[0].properties.name,
+            JSON.parse(e.features[0].properties.cases),
+            e.features[0].properties.thisWeek
+          );
+        }
+      }
+    });
+  }
+  //hide all layers
+  Object.keys(layers).forEach((key) => {
+    if (key === week) return;
+    if (map.getLayoutProperty(key, 'visibility') === 'visible')
+      map.setLayoutProperty(key, 'visibility', 'none');
+    if (map.getLayoutProperty(key + '-borders', 'visibility') === 'visible')
+      map.setLayoutProperty(key + '-borders', 'visibility', 'none');
   });
 };
+
+const drawCases = () => {
+  map.addSource('msoa', { type: 'geojson', data });
+  showLayerForWeek();
+};
+
+let sliderMax;
 
 getData().then(({ file, maxCases, reportDate, updateDate, week, day }) => {
   console.log(reportDate, updateDate, week, day);
   isDataLoaded = true;
   data = file;
+  sliderMax = +data.features[0].properties.maxWeek + 1;
+  slider.max = sliderMax;
+  slider.value = sliderMax;
   maximumCases = maxCases;
   theReportDate = reportDate;
   theUpdateDate = updateDate;
@@ -215,20 +295,8 @@ map.on('mousemove', function (e) {
   }
 });
 
-var hoveredStateId = null;
-var lastHoveredStateId = -1;
-map.on('mousemove', 'msoa', function (e) {
-  if (e.features.length > 0) {
-    hoveredStateId = e.features[0].id;
-    if (hoveredStateId !== lastHoveredStateId) {
-      map.setFeatureState({ source: 'msoa', id: lastHoveredStateId }, { hover: false });
-      map.setFeatureState({ source: 'msoa', id: hoveredStateId }, { hover: true });
-      lastHoveredStateId = hoveredStateId;
-      drawSpark(
-        e.features[0].properties.name,
-        JSON.parse(e.features[0].properties.cases),
-        e.features[0].properties.thisWeek
-      );
-    }
-  }
+slider.addEventListener('input', (e) => {
+  if (!sliderMax) return;
+  if (+e.target.value === +sliderMax) showLayerForWeek('thisWeek');
+  else showLayerForWeek('w' + e.target.value);
 });

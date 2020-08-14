@@ -35,11 +35,36 @@
       display: none;
       pointer-events: none;
     }
+    .slider {
+      width: 50%;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+      position: absolute;
+      bottom: 35px;
+      right: 10px;
+    }
+
+    .slider:hover {
+      opacity: 1;
+    }
+
+    #date {
+      overflow: hidden;
+      position: absolute;
+      right: 50px;
+      top: 10px;
+      padding: 2px;
+      background: white;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <canvas id="spark"></canvas>
+  <div id="date"></div>
+  <input type="range" min="5" max="100" value="50" class="slider" id="myRange">
 
   <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,fetch"></script>
   <script src="/{{ scriptFile }}"></script>

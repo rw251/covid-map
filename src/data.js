@@ -20,6 +20,10 @@ const getData = () =>
     file.features.forEach((feat) => {
       feat.id = feat.properties.OBJECTID;
       if (cases[feat.properties.MSOA11CD]) {
+        for (let i = 0; i < cases[feat.properties.MSOA11CD].d.length; i++) {
+          feat.properties['w' + (i + 5)] = cases[feat.properties.MSOA11CD].d[i];
+        }
+        feat.properties.maxWeek = cases[feat.properties.MSOA11CD].d.length + 4;
         feat.properties.cases = cases[feat.properties.MSOA11CD].d;
         feat.properties.name = cases[feat.properties.MSOA11CD].n;
         feat.properties.thisWeek = cases[feat.properties.MSOA11CD].l;
@@ -29,6 +33,9 @@ const getData = () =>
         }
       } else {
         feat.properties.cases = [{}, {}, {}];
+        for (let i = 0; i < 100; i++) {
+          feat.properties['w' + i] = 0;
+        }
         feat.properties.thisWeek = 0;
         feat.properties.name = 'No data for this area';
       }
