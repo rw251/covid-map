@@ -49,7 +49,7 @@ const getRangeFromWeek = (week) => {
 };
 
 let maximumCases;
-const drawSpark = (name, values, latestValue) => {
+const drawSpark = (name = lastName, values = lastValues, latestValue = lastLatestValue) => {
   if (!values) return;
   let dayFactor = theDay === 0 ? 7 : theDay;
   const tips = [];
@@ -63,11 +63,12 @@ const drawSpark = (name, values, latestValue) => {
     }
   });
   lastName = name;
-  lastValues = values;
+  lastValues = values.slice(0);
   lastLatestValue = latestValue;
   ctx.clearRect(0, 0, spark.width, spark.height);
 
   // draw boundary
+  ctx.strokeStyle = '#000';
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
   ctx.beginPath();
   ctx.moveTo(10 + radius, 10);
@@ -142,13 +143,24 @@ const drawSpark = (name, values, latestValue) => {
     );
   }
   ctx.stroke();
+
+  // draw current date line
+  ctx.beginPath();
+  ctx.strokeStyle = '#ff0000';
+  const x =
+    +slider.value === +sliderMax
+      ? 10 + margin + (values.length + dayFactor / 7) * ((width - margin) / n)
+      : 10 + margin + (+slider.value - 5) * ((width - margin) / n);
+  ctx.moveTo(x, 40);
+  ctx.lineTo(x, 200);
+  ctx.stroke();
 };
 
 const resizeCanvas = () => {
   spark.width = window.innerWidth;
   spark.height = window.innerHeight;
   width = Math.min(400, spark.width / 2);
-  if (lastName) drawSpark(lastName, lastValues, lastLatestValue);
+  if (lastName) drawSpark();
 };
 
 window.addEventListener('resize', resizeCanvas, false);
@@ -286,17 +298,34 @@ map.on('load', () => {
   if (isDataLoaded) drawCases();
 });
 
-map.on('mousemove', function (e) {
-  var features = map.queryRenderedFeatures(e.point);
-  if (features.length > 0 && features[0].properties.OBJECTID) {
-    spark.style.display = 'block';
-  } else {
-    spark.style.display = 'none';
-  }
-});
+// map.on('mousemove', function (e) {
+//   var features = map.queryRenderedFeatures(e.point);
+//   if (features.length > 0 && features[0].properties.OBJECTID) {
+//     spark.style.display = 'block';
+//   } else {
+//     spark.style.display = 'none';
+//   }
+// });
+
+const doSliderThing = (val) => {
+  if (!sliderMax) return;
+  drawSpark();
+  if (+val === +sliderMax) showLayerForWeek('thisWeek');
+  else showLayerForWeek('w' + val);
+};
 
 slider.addEventListener('input', (e) => {
-  if (!sliderMax) return;
-  if (+e.target.value === +sliderMax) showLayerForWeek('thisWeek');
-  else showLayerForWeek('w' + e.target.value);
+  doSliderThing(e.target.value);
+});
+
+const downBtn = document.getElementById('downButton');
+const upBtn = document.getElementById('upButton');
+
+downBtn.addEventListener('click', () => {
+  slider.value = +slider.value - 1;
+  doSliderThing(slider.value);
+});
+upBtn.addEventListener('click', () => {
+  slider.value = +slider.value + 1;
+  doSliderThing(slider.value);
 });
