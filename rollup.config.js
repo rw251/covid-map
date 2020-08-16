@@ -43,7 +43,7 @@ function buildConfig({ watch } = {}) {
         targets: [
           { src: 'src/static/*', dest: distDir, dot: true },
           { src: 'data/*', dest: distDir, dot: true },
-          { src: 'data/data.json', dest: distDir, rename: 'data.min.json' },
+          { src: 'harvester/covid/data.json', dest: distDir, rename: 'data.min.json' },
         ],
       }),
     ].filter((item) => item), // filter out unused plugins by filtering out false and null values
