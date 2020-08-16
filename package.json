@@ -1,6 +1,6 @@
 {
   "name": "covid-map",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "A map of UK covid cases by local area",
   "dependencies": {
     "mapbox-gl": "^1.11.1"
