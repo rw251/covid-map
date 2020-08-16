@@ -1,9 +1,9 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
-const { join } = require('path');
 const XlsxStreamReader = require('xlsx-stream-reader');
 
-const data = JSON.parse(fs.readFileSync(join(__dirname, '..', 'data', 'data.json')));
+const dataFile = 'data.json';
+const data = JSON.parse(fs.readFileSync(dataFile));
 
 const lastReportDate = data.reportDate;
 const lastUpdateDate = data.updateDate;
@@ -97,10 +97,7 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
       data.updateDate = updateDate;
       data.week = week;
       data.day = day;
-      fs.writeFileSync(
-        join(__dirname, '..', 'data', 'data.json'),
-        JSON.stringify(data, null, 2).replace(/ {2}/g, '\t')
-      );
+      fs.writeFileSync(dataFile, JSON.stringify(data, null, 2).replace(/ {2}/g, '\t'));
     });
 
 // let week = 32;

@@ -31,15 +31,14 @@
   },
   "scripts": {
     "start": "npm run serve",
-    "update": "node src/update.js",
-    "postupdate": "prettier --write data/data.json",
     "build": "rollup -c",
     "build:production": "rollup -c --environment PRODUCTION",
     "postbuild:production": "json-minify ./public_html/covid/data.json > ./public_html/covid/data.min.json",
     "predeploy": "node deploy.js",
-    "deploy": "npm run deploy:client",
+    "deploy": "concurrently -kill-others-on-fail \"npm run deploy:client\" \"npm run deploy:cron\"",
     "predeploy:client": "npm run build:production",
     "deploy:client": "rsync -az --force --delete --progress -e 'ssh' ./public_html/covid/ rw251.com:~/public_html/covid --exclude=/.ssh --exclude=/.logs --exclude=/.cagefs --exclude=/.cl.selector --exclude=/.bash_history",
+    "deploy:cron": "rsync -az --force --delete --progress -e 'ssh' ./src/ rw251.com:~/cron/covid --exclude=/.ssh --exclude=/.logs --exclude=/.cagefs --exclude=/.cl.selector --exclude=/.bash_history",
     "serve": "concurrently -kill-others-on-fail \"npm run watch\" \"http-server ./public_html/covid -p 7498 -a localhost -c-1 -o\"",
     "watch": "rollup -c -w"
   },

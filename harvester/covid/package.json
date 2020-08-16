@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "tidy": "prettier --write data.json",
+    "minify": "json-minify ../../public_html/covid/data.json > ../../public_html/covid/data.min.json"
+  },
+  "dependencies": {
+    "json-minify": "^1.0.0",
+    "node-fetch": "^2.6.0",
+    "prettier": "^2.0.5",
+    "xlsx-stream-reader": "^1.1.0"
+  }
+}
