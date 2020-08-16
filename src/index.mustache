@@ -39,14 +39,16 @@
       max-width: 400px;
       position: absolute;
       top: 225px;
-      left: 10px;
+      left: 13.5px;
     }
-
     .slider {
-      width: 80%;
+      width: calc(100% - 76px);
       opacity: 0.7;
       -webkit-transition: .2s;
       transition: opacity .2s;
+      margin: 0;
+      height: 32px;
+      vertical-align: middle;
     }
 
     .slider:hover {
@@ -56,22 +58,27 @@
     #date {
       overflow: hidden;
       position: absolute;
-      right: 50px;
+      left: 50px;
       top: 10px;
       padding: 2px;
       background: white;
       pointer-events: none;
+    }
+    .moveDate {
+      width: 32px;
+      height: 32px;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <canvas id="spark"></canvas>
+  <p id="blankCanvas" style="position:absolute;left: 20px;top: 10px;width:400px;max-width:50%">Hover over an area to see a chart of historic data...</p>
   <div id="date"></div>
   <div id="mySlider">
-    <input type="button" id="downButton" value="-">
+    <input type="button" class="moveDate" id="downButton" value="<">
     <input type="range" min="5" max="50" value="50" class="slider" id="myRange">
-    <input type="button" id="upButton" value="+">
+    <input type="button" class="moveDate" id="upButton" value=">">
   </div>
 
   <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,fetch"></script>

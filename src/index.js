@@ -5,6 +5,7 @@ const spark = document.getElementById('spark');
 const ctx = spark.getContext('2d');
 const slider = document.getElementById('myRange');
 const dateText = document.getElementById('date');
+const sliderBox = document.getElementById('mySlider');
 
 let lastName;
 let lastValues;
@@ -36,11 +37,18 @@ const getDay = (week, day) => {
   weekStart.setDate(weekStart.getDate() + (day - 1));
   return weekStart;
 };
+const startFromEnd = (end) => {
+  const start = new Date(end);
+  start.setDate(start.getDate() - 6);
+  return start;
+};
 const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const getFormattedDate = (dt) => `${dt.getDate()} ${m[dt.getMonth()]}`;
 const getRangeFromWeek = (week) => {
   if (week === 'thisWeek') {
-    return `${getFormattedDate(getDay(theWeek, theDay))}`;
+    return `${getFormattedDate(startFromEnd(getDay(theWeek, theDay)))} - ${getFormattedDate(
+      getDay(theWeek, theDay)
+    )}`;
   } else {
     return `${getFormattedDate(getWeekStart(+week.slice(1)))} - ${getFormattedDate(
       getWeekEnd(+week.slice(1))
@@ -48,23 +56,7 @@ const getRangeFromWeek = (week) => {
   }
 };
 
-let maximumCases;
-const drawSpark = (name = lastName, values = lastValues, latestValue = lastLatestValue) => {
-  if (!values) return;
-  let dayFactor = theDay === 0 ? 7 : theDay;
-  const tips = [];
-  const allValues = values.concat([latestValue]);
-  allValues.forEach((val, i) => {
-    if (
-      (i === 0 || (i > 0 && val > allValues[i - 1])) &&
-      (i === allValues.length - 1 || val > allValues[i + 1])
-    ) {
-      tips.push(i);
-    }
-  });
-  lastName = name;
-  lastValues = values.slice(0);
-  lastLatestValue = latestValue;
+const drawWindow = () => {
   ctx.clearRect(0, 0, spark.width, spark.height);
 
   // draw boundary
@@ -82,12 +74,39 @@ const drawSpark = (name = lastName, values = lastValues, latestValue = lastLates
   ctx.quadraticCurveTo(10, 10, 10 + radius, 10);
   ctx.closePath();
   ctx.fill();
+};
+
+let maximumCases;
+const blankMessage = document.getElementById('blankCanvas');
+const drawSpark = (name = lastName, values = lastValues, latestValue = lastLatestValue) => {
+  if (!values) {
+    drawWindow();
+    blankMessage.style.display = 'block';
+    return;
+  }
+  blankMessage.style.display = 'none';
+  let dayFactor = theDay === 0 ? 7 : theDay;
+  const tips = [];
+  const allValues = values.concat([latestValue]);
+  allValues.forEach((val, i) => {
+    if (
+      (i === 0 || (i > 0 && val > allValues[i - 1])) &&
+      (i === allValues.length - 1 || val > allValues[i + 1])
+    ) {
+      tips.push(i);
+    }
+  });
+  lastName = name;
+  lastValues = values.slice(0);
+  lastLatestValue = latestValue;
+
+  drawWindow();
 
   // y axis
   const margin = 30;
   ctx.beginPath();
   ctx.moveTo(10 + margin, 40);
-  ctx.lineTo(10 + margin, 200);
+  ctx.lineTo(10 + margin, height);
   ctx.stroke();
 
   // y axis markers
@@ -100,11 +119,11 @@ const drawSpark = (name = lastName, values = lastValues, latestValue = lastLates
   ctx.textAlign = 'right';
   ctx.fillText(maximumCases[maxIdx], margin - 2, 43);
   ctx.beginPath();
-  ctx.moveTo(margin, 200);
-  ctx.lineTo(10 + margin, 200);
+  ctx.moveTo(margin, height);
+  ctx.lineTo(10 + margin, height);
   ctx.stroke();
   ctx.textAlign = 'right';
-  ctx.fillText('0', margin - 2, 203);
+  ctx.fillText('0', margin - 2, height + 3);
 
   // title
   const n = values.length;
@@ -120,18 +139,18 @@ const drawSpark = (name = lastName, values = lastValues, latestValue = lastLates
   ctx.font = '10px sans-serif';
   ctx.textAlign = 'center';
   ctx.beginPath();
-  ctx.moveTo(10 + margin, 200 - u * first);
+  ctx.moveTo(10 + margin, height - u * first);
   values.forEach((x, i) => {
-    ctx.lineTo(10 + margin + (i + 1) * ((width - margin) / n), 200 - u * x);
+    ctx.lineTo(10 + margin + (i + 1) * ((width - margin) / n), height - u * x);
 
     if (tips.indexOf(i + 1) > -1) {
       // Add number over tip
-      ctx.fillText(x, 10 + margin + (i + 1) * ((width - margin) / n), 197 - u * x);
+      ctx.fillText(x, 10 + margin + (i + 1) * ((width - margin) / n), height - 3 - u * x);
     }
   });
   ctx.lineTo(
     10 + margin + (values.length + dayFactor / 7) * ((width - margin) / n),
-    200 - u * latestValue
+    height - u * latestValue
   );
 
   if (tips.indexOf(values.length + 1) > -1) {
@@ -139,7 +158,7 @@ const drawSpark = (name = lastName, values = lastValues, latestValue = lastLates
     ctx.fillText(
       latestValue,
       10 + margin + (values.length + dayFactor / 7) * ((width - margin) / n),
-      197 - u * latestValue
+      height - 3 - u * latestValue
     );
   }
   ctx.stroke();
@@ -152,14 +171,18 @@ const drawSpark = (name = lastName, values = lastValues, latestValue = lastLates
       ? 10 + margin + (values.length + dayFactor / 7) * ((width - margin) / n)
       : 10 + margin + (+slider.value - 5) * ((width - margin) / n);
   ctx.moveTo(x, 40);
-  ctx.lineTo(x, 200);
+  ctx.lineTo(x, height);
   ctx.stroke();
 };
 
 const resizeCanvas = () => {
   spark.width = window.innerWidth;
   spark.height = window.innerHeight;
-  width = Math.min(400, spark.width / 2);
+  width = Math.min(400, (3 * spark.width) / 4);
+  height = Math.min(200, width / 2);
+  sliderBox.style.top = `${height + 20}px`;
+  sliderBox.style.width = `${width}px`;
+  dateText.style.top = `${height + 10}px`;
   if (lastName) drawSpark();
 };
 
@@ -298,15 +321,6 @@ map.on('load', () => {
   if (isDataLoaded) drawCases();
 });
 
-// map.on('mousemove', function (e) {
-//   var features = map.queryRenderedFeatures(e.point);
-//   if (features.length > 0 && features[0].properties.OBJECTID) {
-//     spark.style.display = 'block';
-//   } else {
-//     spark.style.display = 'none';
-//   }
-// });
-
 const doSliderThing = (val) => {
   if (!sliderMax) return;
   drawSpark();
@@ -329,3 +343,5 @@ upBtn.addEventListener('click', () => {
   slider.value = +slider.value + 1;
   doSliderThing(slider.value);
 });
+
+drawSpark();
