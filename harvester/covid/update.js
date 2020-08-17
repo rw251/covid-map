@@ -1,8 +1,9 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
+const { join } = require('path');
 const XlsxStreamReader = require('xlsx-stream-reader');
 
-const dataFile = 'data.json';
+const dataFile = join(__dirname, 'data.json');
 const data = JSON.parse(fs.readFileSync(dataFile));
 
 const lastReportDate = data.reportDate;

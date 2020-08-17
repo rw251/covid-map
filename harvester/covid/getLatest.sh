@@ -13,7 +13,7 @@ node $BASE_DIR/cron/covid/update.js
 
 npm run tidy
 
-cp data.json $BASE_DIR/public_html/covid/data.json
+cp $BASE_DIR/cron/covid/data.json $BASE_DIR/public_html/covid/data.json
 
 npm run minify
 
