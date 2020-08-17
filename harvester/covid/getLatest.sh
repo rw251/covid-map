@@ -9,11 +9,11 @@ npm --version
 
 npm config set prefix $BASE_DIR/.npm-packages
 
-node update.js
+node $BASE_DIR/cron/covid/update.js
 
 npm run tidy
 
-cp data.json ../../public_html/covid/data.json
+cp data.json $BASE_DIR/public_html/covid/data.json
 
 npm run minify
 
