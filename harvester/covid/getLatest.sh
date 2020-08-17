@@ -9,6 +9,8 @@ npm --version
 
 npm config set prefix $BASE_DIR/.npm-packages
 
+cd $BASE_DIR/cron/covid
+
 node $BASE_DIR/cron/covid/update.js
 
 npm run tidy
