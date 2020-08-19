@@ -79,12 +79,13 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
     .then((x) => JSON.parse(x.replace(/NaN/g, 'null')))
     .then((x) => {
       console.log('New data so updating...');
+      const isWeekEnd = x.data.filter((x) => x.last_7_days || x.latest_7_days).length === 0;
       x.data.forEach((datum) => {
         if (!data[datum.msoa11_cd]) return;
         const latest = datum.last_7_days || datum.latest_7_days;
         if (!latest) {
-          if (typeof latest === 'object') {
-            //either 0 because it's null
+          if (!isWeekEnd) {
+            //ei!ther 0 because it's null
             data[datum.msoa11_cd].l = 0;
           } else {
             // or it's the end of a week
