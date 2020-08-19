@@ -81,8 +81,9 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
       console.log('New data so updating...');
       x.data.forEach((datum) => {
         if (!data[datum.msoa11_cd]) return;
-        if (!datum.latest_7_days) {
-          if (typeof datum.latest_7_days === 'object') {
+        const latest = datum.last_7_days || datum.latest_7_days;
+        if (!latest) {
+          if (typeof latest === 'object') {
             //either 0 because it's null
             data[datum.msoa11_cd].l = 0;
           } else {
@@ -90,7 +91,7 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
             data[datum.msoa11_cd].l = datum.msoa_data.pop().value || 0;
           }
         } else {
-          data[datum.msoa11_cd].l = datum.latest_7_days;
+          data[datum.msoa11_cd].l = latest;
         }
         data[datum.msoa11_cd].d = datum.msoa_data.map((x) => x.value || 0);
       });
