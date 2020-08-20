@@ -34,7 +34,7 @@ const getWeekEnd = (n) => {
 };
 const getDay = (week, day) => {
   const weekStart = getWeekStart(week);
-  weekStart.setDate(weekStart.getDate() + (day - 1));
+  weekStart.setDate(weekStart.getDate() + ((day + 6) % 7));
   return weekStart;
 };
 const startFromEnd = (end) => {
