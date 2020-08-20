@@ -44,12 +44,21 @@ const getInfoFromXls = () =>
                   console.log('Report date: ' + reportDate);
                 }
                 if (typeof rowVal === 'string' && rowVal.indexOf('report (up to') > -1) {
-                  const [, wk, dy, updateDt] = rowVal.match(
-                    /week ([0-9]+) day ([0-9]+) data.*ending (.+)\)/
-                  );
-                  week = +wk;
-                  day = +dy;
-                  updateDate = updateDt;
+                  if (rowVal.indexOf('day') > -1) {
+                    // Says something like: Week 33 report (up to week 34 day 3 data - ending 16th August 2020)
+                    const [, wk, dy, updateDt] = rowVal.match(
+                      /week ([0-9]+) day ([0-9]+) data.*ending (.+)\)/
+                    );
+                    week = +wk;
+                    day = +dy;
+                    updateDate = updateDt;
+                  } else {
+                    // Says something like: Week 34 report (up to week 33 data - ending 16th August 2020)
+                    const [, wk, updateDt] = rowVal.match(/week ([0-9]+) data.*ending (.+)\)/);
+                    week = +wk;
+                    day = 0;
+                    updateDate = updateDt;
+                  }
                 }
               });
             }
