@@ -4,6 +4,7 @@ const { join } = require('path');
 const XlsxStreamReader = require('xlsx-stream-reader');
 
 const dataFile = join(__dirname, 'data.json');
+const dateFile = join(__dirname, '..', '..', 'public_html', 'covid', 'latest.json');
 const data = JSON.parse(fs.readFileSync(dataFile));
 
 const lastReportDate = data.reportDate;
@@ -110,6 +111,7 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
       data.week = week;
       data.day = day;
       fs.writeFileSync(dataFile, JSON.stringify(data, null, 2).replace(/ {2}/g, '\t'));
+      fs.writeFileSync(dateFile, JSON.stringify({ reportDate, updateDate }));
     });
 
 // let week = 32;

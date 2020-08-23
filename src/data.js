@@ -13,10 +13,14 @@ const getMsoaBoundaries = () =>
 
 const getCasesData = () => fetch('data.min.json').then((resp) => resp.json());
 
+const getDate = () => fetch('latest.json').then((resp) => resp.json());
+
 const getData = () =>
-  Promise.all([getMsoaBoundaries(), getCasesData()]).then(([file, cases]) => {
+  Promise.all([getMsoaBoundaries(), getCasesData(), getDate()]).then(([file, cases, date]) => {
     let maxCases = [0];
     const { reportDate, updateDate, week, day } = cases;
+    const { reportDate: latestReportDate, updateDate: latestUpdateDate } = date;
+    const isNewDataAvailable = updateDate !== latestUpdateDate || reportDate !== latestReportDate;
     file.features.forEach((feat) => {
       feat.id = feat.properties.OBJECTID;
       if (cases[feat.properties.MSOA11CD]) {
@@ -40,7 +44,7 @@ const getData = () =>
         feat.properties.name = 'No data for this area';
       }
     });
-    return { file, maxCases, reportDate, updateDate, week, day };
+    return { file, maxCases, reportDate, updateDate, week, day, isNewDataAvailable };
   });
 
 export { getData };

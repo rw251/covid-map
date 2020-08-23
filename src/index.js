@@ -25,6 +25,7 @@ const ctx = spark.getContext('2d');
 const slider = document.getElementById('myRange');
 const dateText = document.getElementById('date');
 const sliderBox = document.getElementById('mySlider');
+const updateNotice = document.querySelector('.update');
 
 let lastName;
 let lastValues;
@@ -320,8 +321,14 @@ const drawCases = () => {
 
 let sliderMax;
 
-getData().then(({ file, maxCases, reportDate, updateDate, week, day }) => {
+getData().then(({ file, maxCases, reportDate, updateDate, week, day, isNewDataAvailable }) => {
   console.log(reportDate, updateDate, week, day);
+  if (isNewDataAvailable) {
+    updateNotice.style.display = 'block';
+    updateNotice.addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
   isDataLoaded = true;
   data = file;
   sliderMax = +data.features[0].properties.maxWeek + 1;

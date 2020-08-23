@@ -66,6 +66,28 @@
       width: 32px;
       height: 32px;
     }
+    .update {
+      position: absolute;
+      left: 0;
+      padding: 10px;
+      border: 5px solid yellow;
+      border-radius: 15px;
+      margin: 20px;
+      right: 0;
+      bottom: 20px;
+      background: lightyellow;
+      font-size: 5vw;
+      text-align: center;
+      font-family: sans-serif;
+      color: #6d6d6d;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.3s ease-in;
+      display:none;
+    }
+    .update:hover {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -78,6 +100,7 @@
     <input type="range" min="5" max="50" value="50" class="slider" id="myRange">
     <input type="button" class="moveDate" id="upButton" value=">">
   </div>
+  <div class="update">New data available, tap to reload</div>
   <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
   <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,fetch"></script>
   <script src="/{{ scriptFile }}"></script>
