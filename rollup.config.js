@@ -6,6 +6,7 @@ import rimraf from 'rimraf';
 import { join } from 'path';
 import { terser } from 'rollup-plugin-terser';
 import createHTMLPlugin from './lib/create-html';
+import createServiceWorkerPlugin from './lib/create-service-worker';
 
 const distDir = join('public_html', 'covid');
 // Remove ./dist
@@ -46,6 +47,7 @@ function buildConfig({ watch } = {}) {
           { src: 'harvester/covid/data.json', dest: distDir, rename: 'data.min.json' },
         ],
       }),
+      createServiceWorkerPlugin(),
     ].filter((item) => item), // filter out unused plugins by filtering out false and null values
   };
 }

@@ -1,0 +1,18 @@
+<Files service-worker.js>
+FileETag None
+Header unset ETag
+Header set cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+Header set Pragma "no-cache"
+</Files>
+
+<FilesMatch "\.json$">
+FileETag None
+Header unset ETag
+Header set cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+Header set Pragma "no-cache"
+</FilesMatch>
+
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule (.*) index.html [QSA,L]

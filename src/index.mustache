@@ -3,16 +3,14 @@
 <head>
   <meta charset="utf-8">
   <title>{{ title }}</title>
-
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json" />
-  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#448aff">
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
   <meta name="msapplication-TileColor" content="#2d89ef">
-  <meta name="theme-color" content="#448aff">
+  <meta name="theme-color" content="#cae8d1">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="viewport" content="width=device-width, user-scalable=no" />
   <meta name="Description" content="UK map of confirmed cases for each week. Level of detail is local area. MSOA. Medium level super output area.">
   <link href='https://api.mapbox.com/mapbox-gl-js/v1.11.1/mapbox-gl.css' rel='stylesheet' />
@@ -80,7 +78,7 @@
     <input type="range" min="5" max="50" value="50" class="slider" id="myRange">
     <input type="button" class="moveDate" id="upButton" value=">">
   </div>
-
+  <div>Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
   <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=default,fetch"></script>
   <script src="/{{ scriptFile }}"></script>
 </body>
