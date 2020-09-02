@@ -96,7 +96,7 @@ const getInfoFromArcGis = () =>
     const [, reportDate] = obj1.title.split(' to ');
     const updateDate = new Date().toISOString().substr(0, 10);
 
-    return { week, day, reportDate, updateDate };
+    return { week: +week, day: +day, reportDate, updateDate };
   });
 
 const getLatestData = ({ week, day, reportDate, updateDate }) =>
