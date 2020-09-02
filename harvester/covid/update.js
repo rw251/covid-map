@@ -82,6 +82,23 @@ const getInfoFromXls = () =>
       })
   );
 
+const arcUrl = 'https://www.arcgis.com/sharing/rest/content/items/';
+const getInfoFromArcGis = () =>
+  Promise.all([
+    fetch(`${arcUrl}47574f7a6e454dc6a42c5f6912ed7076/data?f=json`).then((resp) => resp.json()),
+    fetch(`${arcUrl}3ba363a4dad94c2fb1748654048d9506/data?f=json`).then((resp) => resp.json()),
+  ]).then(([obj1, obj2]) => {
+    // id is like "MSOA_2011_week_35_day_5_8314"
+    const id = obj2.operationalLayers.filter((x) => x.id.indexOf('MSOA_2011_week') > -1)[0].id;
+    const [, , , week, , day] = id.split('_');
+
+    // title is like "22nd August to 28th August"
+    const [, reportDate] = obj1.title.split(' to ');
+    const updateDate = new Date().toISOString().substr(0, 10);
+
+    return { week, day, reportDate, updateDate };
+  });
+
 const getLatestData = ({ week, day, reportDate, updateDate }) =>
   fetch('https://c19downloads.azureedge.net/downloads/msoa_data/MSOAs_latest.json')
     .then((x) => x.text())
@@ -102,9 +119,11 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
             data[datum.msoa11_cd].l = datum.msoa_data.pop().value || 0;
           }
         } else {
-          data[datum.msoa11_cd].l = latest;
+          data[datum.msoa11_cd].l = latest < 0 ? 0 : latest;
         }
-        data[datum.msoa11_cd].d = datum.msoa_data.map((x) => x.value || 0);
+        data[datum.msoa11_cd].d = datum.msoa_data
+          .map((x) => x.value || 0)
+          .map((x) => (x < 0 ? 0 : x));
       });
       data.reportDate = reportDate;
       data.updateDate = updateDate;
@@ -119,7 +138,17 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
 // let reportDate = '13 August 2020';
 // let updateDate = '9th August 2020';
 
-getInfoFromXls()
+getInfoFromArcGis().then(({ week, day, reportDate, updateDate }) => {
+  console.log(week, day, reportDate, updateDate);
+});
+Promise.all([getInfoFromArcGis(), getInfoFromXls()])
+  .then(([info1, info2]) => {
+    const dayFromArc = info1.week * 7 + info1.day;
+    const dayFromXls = info2.week * 7 + info2.day;
+    // TODO this will break on 1 Jan 2021
+    if (dayFromArc > dayFromXls) return info1;
+    return info2;
+  })
   .then(({ week, day, reportDate, updateDate }) =>
     reportDate !== lastReportDate || updateDate !== lastUpdateDate
       ? getLatestData({ week, day, reportDate, updateDate })
