@@ -83,21 +83,22 @@ const getInfoFromXls = () =>
   );
 
 const arcUrl = 'https://www.arcgis.com/sharing/rest/content/items/';
-const getInfoFromArcGis = () =>
-  Promise.all([
-    fetch(`${arcUrl}47574f7a6e454dc6a42c5f6912ed7076/data?f=json`).then((resp) => resp.json()),
-    fetch(`${arcUrl}3ba363a4dad94c2fb1748654048d9506/data?f=json`).then((resp) => resp.json()),
-  ]).then(([obj1, obj2]) => {
-    // id is like "MSOA_2011_week_35_day_5_8314"
-    const id = obj2.operationalLayers.filter((x) => x.id.indexOf('MSOA_2011_week') > -1)[0].id;
-    const [, , , week, , day] = id.split('_');
+const getInfoFromArcGis = async () => {
+  const obj1 = await fetch(`${arcUrl}47574f7a6e454dc6a42c5f6912ed7076/data?f=json`).then((resp) =>
+    resp.json()
+  );
+  let [, reportDate] = obj1.title.split(' to ');
+  if (reportDate.indexOf('<') > -1) {
+    reportDate = reportDate.split('<')[0];
+  }
+  const updateDate = new Date().toISOString().substr(0, 10);
+  const obj2 = await fetch(`${arcUrl}${obj1.map.itemId}/data?f=json`).then((resp) => resp.json());
+  // id is like "MSOA_2011_week_35_day_5_8314"
+  const id = obj2.operationalLayers.filter((x) => x.id.indexOf('MSOA_2011_week') > -1)[0].id;
+  const [, , , week, , day] = id.split('_');
 
-    // title is like "22nd August to 28th August"
-    const [, reportDate] = obj1.title.split(' to ');
-    const updateDate = new Date().toISOString().substr(0, 10);
-
-    return { week: +week, day: +day, reportDate, updateDate };
-  });
+  return { week: +week, day: +day, reportDate, updateDate };
+};
 
 const getLatestData = ({ week, day, reportDate, updateDate }) =>
   fetch('https://c19downloads.azureedge.net/downloads/msoa_data/MSOAs_latest.json')
