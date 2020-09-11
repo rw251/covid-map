@@ -44,6 +44,15 @@ const getInfoFromXls = () =>
                   reportDate = rowVal.replace('Published: ', '').trim();
                   console.log('Report date: ' + reportDate);
                 }
+                if (typeof rowVal === 'string' && rowVal.indexOf('week ending') > -1) {
+                  // Says something like: Week 36 report (week ending 6 September)
+                  const [, wk, updateDt] = rowVal.match(
+                    /Week ([0-9]+) report \(week ending (.+)\)/
+                  );
+                  week = +wk;
+                  day = 7;
+                  updateDate = updateDt;
+                }
                 if (typeof rowVal === 'string' && rowVal.indexOf('report (up to') > -1) {
                   if (rowVal.indexOf('day') > -1) {
                     // Says something like: Week 33 report (up to week 34 day 3 data - ending 16th August 2020)
@@ -117,7 +126,8 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
             data[datum.msoa11_cd].l = 0;
           } else {
             // or it's the end of a week
-            data[datum.msoa11_cd].l = datum.msoa_data.pop().value || 0;
+            const lastValue = datum.msoa_data.pop().value;
+            data[datum.msoa11_cd].l = lastValue < 0 ? 0 : lastValue;
           }
         } else {
           data[datum.msoa11_cd].l = latest < 0 ? 0 : latest;
@@ -139,13 +149,12 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
 // let reportDate = '13 August 2020';
 // let updateDate = '9th August 2020';
 
-getInfoFromArcGis().then(({ week, day, reportDate, updateDate }) => {
-  console.log(week, day, reportDate, updateDate);
-});
 Promise.all([getInfoFromArcGis(), getInfoFromXls()])
   .then(([info1, info2]) => {
     const dayFromArc = info1.week * 7 + info1.day;
     const dayFromXls = info2.week * 7 + info2.day;
+    console.log('dayFromArc:', dayFromArc);
+    console.log('dayFromXls:', dayFromXls);
     // TODO this will break on 1 Jan 2021
     if (dayFromArc > dayFromXls) return info1;
     return info2;
