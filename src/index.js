@@ -26,6 +26,7 @@ const slider = document.getElementById('myRange');
 const dateText = document.getElementById('date');
 const sliderBox = document.getElementById('mySlider');
 const updateNotice = document.querySelector('.update');
+const mapCanvas = document.getElementById('map');
 
 let lastName;
 let lastValues;
@@ -34,6 +35,7 @@ let maxIdx = 3;
 const radius = 5;
 let height = 200;
 let width = 400;
+let isAreaSelected = false;
 
 // report data properties
 let theReportDate;
@@ -147,7 +149,7 @@ const drawSpark = (name = lastName, values = lastValues, latestValue = lastLates
 
   // title
   const n = values.length;
-  const u = 160 / maximumCases[maxIdx];
+  const u = (height - 40) / maximumCases[maxIdx];
   const first = values.shift();
   ctx.font = '20px sans-serif';
   ctx.fillStyle = 'black';
@@ -295,11 +297,13 @@ const showLayerForWeek = (week = 'thisWeek') => {
           map.setFeatureState({ source: 'msoa', id: lastHoveredStateId }, { hover: false });
           map.setFeatureState({ source: 'msoa', id: hoveredStateId }, { hover: true });
           lastHoveredStateId = hoveredStateId;
-          drawSpark(
-            e.features[0].properties.name,
-            JSON.parse(e.features[0].properties.cases),
-            e.features[0].properties.thisWeek
-          );
+          if (!isAreaSelected) {
+            drawSpark(
+              e.features[0].properties.name,
+              JSON.parse(e.features[0].properties.cases),
+              e.features[0].properties.thisWeek
+            );
+          }
         }
       }
     });
@@ -369,5 +373,8 @@ upBtn.addEventListener('click', () => {
   slider.value = +slider.value + 1;
   doSliderThing(slider.value);
 });
+// mapCanvas.addEventListener('click', () => {
+//   isAreaSelected = true;
+// });
 
 drawSpark();
