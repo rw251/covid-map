@@ -53,6 +53,13 @@ const getInfoFromXls = () =>
                   day = 7;
                   updateDate = updateDt;
                 }
+                if (typeof rowVal === 'string' && rowVal.indexOf('(ending') > -1) {
+                  // Says something like: Week 36 report (week ending 6 September)
+                  const [, wk, updateDt] = rowVal.match(/Week ([0-9]+) report \(ending (.+)\)/);
+                  week = +wk;
+                  day = 7;
+                  updateDate = updateDt;
+                }
                 if (typeof rowVal === 'string' && rowVal.indexOf('report (up to') > -1) {
                   if (rowVal.indexOf('day') > -1) {
                     // Says something like: Week 33 report (up to week 34 day 3 data - ending 16th August 2020)
