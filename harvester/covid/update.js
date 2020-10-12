@@ -117,7 +117,7 @@ const getInfoFromArcGis = async () => {
 };
 
 const getLatestData = ({ week, day, reportDate, updateDate }) =>
-  fetch('https://c19downloads.azureedge.net/downloads/msoa_data/MSOAs_latest.json')
+  fetch('https://coronavirus.data.gov.uk/downloads/msoa_data/MSOAs_latest.json')
     .then((x) => x.text())
     // sometimes they use NaN instead of null
     .then((x) => JSON.parse(x.replace(/NaN/g, 'null')))
