@@ -100,6 +100,7 @@ const getInfoFromXls = () =>
 
 const arcUrl = 'https://www.arcgis.com/sharing/rest/content/items/';
 const getInfoFromArcGis = async () => {
+  return { week: 0, day: 0 };
   const obj1 = await fetch(`${arcUrl}47574f7a6e454dc6a42c5f6912ed7076/data?f=json`).then((resp) =>
     resp.json()
   );
