@@ -126,22 +126,22 @@ const getLatestData = ({ week, day, reportDate, updateDate }) =>
       console.log('New data so updating...');
       const isWeekEnd = x.data.filter((x) => x.last_7_days || x.latest_7_days).length === 0;
       x.data.forEach((datum) => {
-        if (!data[datum.msoa11_cd]) return;
+        if (!data[datum.areaCode]) return;
         const latest = datum.last_7_days || datum.latest_7_days;
         if (!latest) {
           if (!isWeekEnd) {
             //ei!ther 0 because it's null
-            data[datum.msoa11_cd].l = 0;
+            data[datum.areaCode].l = 0;
           } else {
             // or it's the end of a week
-            const lastValue = datum.msoa_data.pop().value;
-            data[datum.msoa11_cd].l = lastValue < 0 ? 0 : lastValue;
+            const lastValue = datum.newCasesByPublishDate.pop().rollingSum;
+            data[datum.areaCode].l = lastValue < 0 ? 0 : lastValue;
           }
         } else {
-          data[datum.msoa11_cd].l = latest < 0 ? 0 : latest;
+          data[datum.areaCode].l = latest < 0 ? 0 : latest;
         }
-        data[datum.msoa11_cd].d = datum.msoa_data
-          .map((x) => x.value || 0)
+        data[datum.areaCode].d = datum.newCasesByPublishDate
+          .map((x) => x.rollingSum || 0)
           .map((x) => (x < 0 ? 0 : x));
       });
       data.reportDate = reportDate;
